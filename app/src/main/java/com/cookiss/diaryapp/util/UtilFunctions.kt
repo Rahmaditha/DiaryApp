@@ -1,9 +1,13 @@
 package com.cookiss.diaryapp.util
 
+import android.app.Activity
 import android.net.Uri
 import android.os.Build
 import android.util.Log
+import androidx.activity.result.IntentSenderRequest
 import androidx.annotation.RequiresApi
+import com.google.android.gms.auth.api.identity.BeginSignInRequest
+import com.google.android.gms.auth.api.identity.Identity
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.ktx.storageMetadata
 import io.realm.kotlin.types.RealmInstant
@@ -78,4 +82,40 @@ fun Instant.toRealmInstant(): RealmInstant {
     } else {
         RealmInstant.from(sec + 1, -1_000_000 + nano)
     }
+}
+
+fun oneTapSignIn(
+    activity: Activity,
+    launchActivityResult: (IntentSenderRequest) -> Unit,
+    setFilterByAuthorizedAccounts: Boolean,
+    setAutoSelectEnabled: Boolean,
+    addOnFailure: (Exception) -> Unit
+) {
+    val oneTapClient = Identity.getSignInClient(activity)
+    val signInRequest = BeginSignInRequest.builder()
+        .setGoogleIdTokenRequestOptions(
+            BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
+                .setSupported(true)
+                .setServerClientId(Constants.CLIENT_ID)
+                .setFilterByAuthorizedAccounts(setFilterByAuthorizedAccounts)
+                .build()
+        )
+        .setAutoSelectEnabled(setAutoSelectEnabled)
+        .build()
+
+    oneTapClient.beginSignIn(signInRequest)
+        .addOnSuccessListener { result ->
+            try {
+                launchActivityResult(
+                    IntentSenderRequest.Builder(
+                        result.pendingIntent.intentSender
+                    ).build()
+                )
+            } catch (e: Exception) {
+                Log.d("OneTapSignIn", "Couldn't start One Tap UI: ${e.message}")
+            }
+        }
+        .addOnFailureListener { exception ->
+            addOnFailure(exception)
+        }
 }

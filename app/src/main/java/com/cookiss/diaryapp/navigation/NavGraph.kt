@@ -9,8 +9,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.cookiss.diaryapp.presentation.screens.auth.AuthenticationScreen
 import com.cookiss.diaryapp.util.Constants.WRITE_SCREEN_ARGUMENT_KEY
-import com.stevdzasan.messagebar.rememberMessageBarState
-import com.stevdzasan.onetap.rememberOneTapSignInState
 
 @Composable
 fun SetupNavGraph(startDestination: String, navController: NavHostController){
@@ -18,24 +16,24 @@ fun SetupNavGraph(startDestination: String, navController: NavHostController){
         startDestination = startDestination,
         navController = navController
     ){
-        authenticationRoute()
+        authenticationRoute(
+            navigateToHome = {
+                navController.popBackStack()
+                navController.navigate(Screen.Home.route)
+            },
+//            onDataLoaded = onDataLoaded
+        )
         homeRoute()
         writeRoute()
     }
 }
 
-fun NavGraphBuilder.authenticationRoute(){
+fun NavGraphBuilder.authenticationRoute(
+    navigateToHome: () -> Unit
+){
     composable(route = Screen.Authentication.route){
-        val oneTapState = rememberOneTapSignInState()
-        val messageBarState = rememberMessageBarState()
-
         AuthenticationScreen(
-            loadingState = oneTapState.opened,
-            onButtonClicked = {
-              oneTapState.open()
-            },
-            messageBarState = messageBarState,
-            oneTapState = oneTapState
+            navigateToHome = navigateToHome,
         )
     }
 }

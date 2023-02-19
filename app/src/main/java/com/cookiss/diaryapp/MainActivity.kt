@@ -17,7 +17,9 @@ import com.cookiss.diaryapp.navigation.Screen
 import com.cookiss.diaryapp.navigation.SetupNavGraph
 import com.cookiss.diaryapp.ui.theme.DiaryAppTheme
 import com.google.firebase.FirebaseApp
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
