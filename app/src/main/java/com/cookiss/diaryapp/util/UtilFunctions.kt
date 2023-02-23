@@ -62,7 +62,6 @@ fun fetchImagesFromFirebase(
 //        .addOnSuccessListener { onSuccess() }
 //}
 
-@RequiresApi(Build.VERSION_CODES.O)
 fun RealmInstant.toInstant(): Instant {
     val sec: Long = this.epochSeconds
     val nano: Int = this.nanosecondsOfSecond
@@ -73,7 +72,6 @@ fun RealmInstant.toInstant(): Instant {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 fun Instant.toRealmInstant(): RealmInstant {
     val sec: Long = this.epochSecond
     val nano: Int = this.nano

@@ -16,40 +16,85 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.cookiss.diaryapp.R
-import com.cookiss.diaryapp.domain.model.MessageBarState
 import com.cookiss.diaryapp.presentation.components.GoogleButton
 import com.cookiss.diaryapp.presentation.components.MessageBar
+import com.stevdzasan.messagebar.MessageBarState
 
 @Composable
 fun AuthenticationContent(
-    signedInState: Boolean,
-//    loadingState: Boolean,
-    messageBarState: MessageBarState,
+    loadingState: Boolean,
     onButtonClicked: () -> Unit
 ){
     Column(
-        Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Column(modifier = Modifier.weight(0.1f)) {
-            MessageBar(messageBarState = messageBarState)
-        }
         Column(
             modifier = Modifier
-                .weight(0.9f),
+                .weight(9f)
+                .fillMaxWidth()
+                .padding(all = 40.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            CentralContent(signedInState = signedInState, onButtonClicked = onButtonClicked)
+            Column(
+                modifier = Modifier.weight(weight = 10f),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Image(
+                    modifier = Modifier.size(120.dp),
+                    painter = painterResource(id = R.drawable.google_logo),
+                    contentDescription = "Google Logo"
+                )
+                Spacer(modifier = Modifier.height(20.dp))
+                Text(
+                    text = stringResource(id = R.string.auth_title),
+                    fontSize = MaterialTheme.typography.titleLarge.fontSize
+                )
+                Text(
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                    text = stringResource(id = R.string.auth_subtitle),
+                    fontSize = MaterialTheme.typography.bodyMedium.fontSize
+                )
+            }
+            Column(
+                modifier = Modifier.weight(weight = 2f),
+                verticalArrangement = Arrangement.Bottom
+            ) {
+                GoogleButton(
+                    loadingState = loadingState,
+                    onClick = onButtonClicked
+                )
+            }
         }
     }
+
+//    Column(
+////        Modifier.fillMaxWidth(),
+//        verticalArrangement = Arrangement.Center,
+//        horizontalAlignment = Alignment.CenterHorizontally
+//    ) {
+////        Column(modifier = Modifier.weight(0.1f)) {
+////            MessageBar(messageBarState = messageBarState)
+////        }
+//        Column(
+//            modifier = Modifier
+//                .weight(0.9f)
+//                .fillMaxWidth()
+//                .padding(all = 40.dp),
+//            verticalArrangement = Arrangement.Center,
+//            horizontalAlignment = Alignment.CenterHorizontally
+//        ) {
+//            CentralContent(loadingState = loadingState, onButtonClicked = onButtonClicked)
+//        }
+//    }
 
 }
 
 @Composable
 fun CentralContent(
-    signedInState: Boolean,
+    loadingState: Boolean,
     onButtonClicked: () -> Unit
 ) {
     Image(
@@ -73,7 +118,7 @@ fun CentralContent(
         textAlign = TextAlign.Center
     )
     GoogleButton(
-        loadingState = signedInState,
+        loadingState = loadingState,
         onClick = onButtonClicked
     )
 }
@@ -81,7 +126,7 @@ fun CentralContent(
 @Composable
 @Preview(showBackground = true, showSystemUi = true)
 fun AuthenticationContentPreview() {
-    AuthenticationContent(signedInState = false, messageBarState = MessageBarState()) {
+    AuthenticationContent(loadingState = false) {
 
     }
 }

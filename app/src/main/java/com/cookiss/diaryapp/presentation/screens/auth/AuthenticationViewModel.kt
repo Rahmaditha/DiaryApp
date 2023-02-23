@@ -14,8 +14,8 @@ import com.cookiss.diaryapp.util.oneTapSignIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.realm.kotlin.mongodb.App
 import io.realm.kotlin.mongodb.Credentials
-import io.realm.kotlin.mongodb.GoogleAuthType
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -26,11 +26,14 @@ class AuthenticationViewModel @Inject constructor(
     private val authRepository: AuthRepository
 ) : ViewModel() {
 
-    private val _signedInState = mutableStateOf(false)
-    val signedInState: State<Boolean> = _signedInState
+    private val _dialogAuthStateOpen = mutableStateOf(false)
+    val dialogAuthStateOpen: State<Boolean> = _dialogAuthStateOpen
 
-    private val _messageBarState = mutableStateOf(MessageBarState())
-    val messageBarState: State<MessageBarState> = _messageBarState
+    private val _authenticated = mutableStateOf(false)
+    val authenticated: State<Boolean> = _authenticated
+
+    var loadingState = mutableStateOf(false)
+        private set
 
 //    private val _apiResponse: MutableState<RequestState<ApiResponse>> =
 //        mutableStateOf(RequestState.Idle)
@@ -38,34 +41,53 @@ class AuthenticationViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            authRepository.readSignedInState().collect { signedInState ->
-                _signedInState.value = signedInState
+            authRepository.readSignedInState().collect { authenticated ->
+                _authenticated.value = authenticated
             }
         }
     }
 
-    fun saveSignedInState(signedInState: Boolean) {
+    fun setLoading(loading: Boolean) {
+        loadingState.value = loading
+    }
+
+    fun saveAuthenticated(authenticated: Boolean) {
         viewModelScope.launch {
-            authRepository.saveSignedInState(signedInState)
+            authRepository.saveSignedInState(authenticated)
+        }
+    }
+
+    fun setDialogAuthOpened(signedInState: Boolean) {
+        viewModelScope.launch {
+            _dialogAuthStateOpen.value = signedInState
         }
     }
 
     fun signInWithMongoAtlas(
         tokenId: String,
-        onSuccess: (Boolean) -> Unit,
+        onSuccess: () -> Unit,
         onError: (Exception) -> Unit
     ){
         viewModelScope.launch {
             try{
                 val result = withContext(Dispatchers.IO){
                     App.create(APP_ID).login(
-                        Credentials.google(tokenId, GoogleAuthType.ID_TOKEN)
+                        Credentials.jwt(tokenId)
+//                        Credentials.google(tokenId, GoogleAuthType.ID_TOKEN)
                     ).loggedIn
                 }
                 withContext(Dispatchers.Main){
-                    Log.d("AuthViewModel", "tokenId: $tokenId")
-                    Log.d("AuthViewModel", "signInWithMongoAtlas: $result")
-                    onSuccess(result)
+                    if(result){
+                        onSuccess()
+                        Log.d("viewModel", "signInWithMongoAtlas: success login")
+                        delay(600)
+                        _authenticated.value = true
+                    }else{
+                        Log.d("viewModel", "signInWithMongoAtlas: not success login")
+                        onError(Exception("User is not logged in."))
+                        delay(600)
+                        _authenticated.value = false
+                    }
                 }
             }catch (e: Exception){
                 withContext(Dispatchers.Main){
@@ -74,17 +96,6 @@ class AuthenticationViewModel @Inject constructor(
                 }
             }
         }
-    }
-
-    fun updateMessageBarState(e: Exception) {
-        _messageBarState.value =
-            MessageBarState(error = e)
-    }
-
-    fun setMessageBarState() {
-        _messageBarState.value = MessageBarState(
-            message = "Successfully Authenticated!",
-        )
     }
 
     fun signIn(

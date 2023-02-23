@@ -3,14 +3,22 @@ package com.cookiss.diaryapp.presentation.screens.auth
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.util.Log
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavHostController
 import com.cookiss.diaryapp.util.Exceptions
+import com.stevdzasan.messagebar.ContentWithMessageBar
+import com.stevdzasan.messagebar.MessageBarState
+
 //import com.stevdzasan.messagebar.MessageBarState
 //import com.stevdzasan.onetap.OneTapSignInState
 
@@ -18,75 +26,82 @@ import com.cookiss.diaryapp.util.Exceptions
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun AuthenticationScreen(
-//    loadingState: Boolean,
-//    onButtonClicked: () -> Unit,
-//    onSuccessfullFirebaseSignIn: (String) -> Unit,
-//    onFailedFirebaseSignIn: (Exception) -> Unit,
-//    navController: NavHostController,
+    onSuccessfullFirebaseSignIn: () -> Unit,
+    messageBarState: MessageBarState,
+    onFailedFirebaseSignIn: (Exception) -> Unit,
     viewModel: AuthenticationViewModel = hiltViewModel(),
-    navigateToHome: () -> Unit,
-//    onTokenIdReceived: (String) -> Unit
-
+    navigateToHome: () -> Unit
 ){
     val activity = (LocalContext.current as Activity)
-    val signedInState by viewModel.signedInState
-    val messageBarState by viewModel.messageBarState
+    val dialogAuthStateOpen by viewModel.dialogAuthStateOpen
+    val authenticated by viewModel.authenticated
+    val loadingState by viewModel.loadingState
+//    val messageBarStatee by viewModel.messageBarState
 
     Scaffold(
+        modifier = Modifier
+            .background(MaterialTheme.colorScheme.surface)
+            .statusBarsPadding()
+            .navigationBarsPadding(),
         content = {
-//            ContentWithMessageBar(messageBarState = messageBarState) {
-//                AuthenticationContent(
-//                    loadingState,
-//                    onButtonClicked
-//                )
-//            }
-
-            AuthenticationContent(
-                signedInState = signedInState,
-                messageBarState = messageBarState,
-                onButtonClicked = {
-                    Log.d("AuthenticationScreen", "button clicked")
-                    viewModel.saveSignedInState(signedInState = true)
-                }
-            )
+            ContentWithMessageBar(messageBarState = messageBarState) {
+                AuthenticationContent(
+                    loadingState = loadingState,
+                    onButtonClicked = {
+                        Log.d("AuthenticationScreen", "button clicked")
+                        viewModel.setLoading(true)
+                        viewModel.setDialogAuthOpened(true)
+                    }
+                )
+            }
         }
     )
 
+
     StartActivityForResult(
-        key = signedInState,
+        key = dialogAuthStateOpen,
         onResultReceived = { tokenId ->
             Log.d("AuthenticationScreen", "tokenId $tokenId")
             viewModel.signInWithMongoAtlas(
                 tokenId = tokenId,
                 onSuccess = {
-                    if(it){
-                        viewModel.setMessageBarState()
-                        navigateToHome()
-                    } },
+                    viewModel.setDialogAuthOpened(false)
+                    onSuccessfullFirebaseSignIn()
+                },
                 onError = {
-                    viewModel.updateMessageBarState(it)
-                }
+                    viewModel.setDialogAuthOpened(false)
+                    onFailedFirebaseSignIn(it)
+                },
             )
-//            navigateToHome()
 
 //            viewModel.verifyTokenOnBackend(ApiRequest(tokenId = tokenId))
         },
         onDialogDismissed = {
-            viewModel.saveSignedInState(signedInState = false)
+            viewModel.setDialogAuthOpened(false)
+            viewModel.saveAuthenticated(false)
+            viewModel.setLoading(false)
         },
     ) { activityLauncher ->
-        Log.d("AuthenticationScreen", "$signedInState")
-        if (signedInState) {
+        Log.d("AuthenticationScreen", "$dialogAuthStateOpen")
+        if (dialogAuthStateOpen) {
             viewModel.signIn(
                 activity = activity,
                 launchActivityResult = { intentSenderRequest ->
                     activityLauncher.launch(intentSenderRequest)
                 },
                 accountNotFound = {
-                    viewModel.updateMessageBarState(e = Exceptions.GoogleAccountNotFoundException())
-                    viewModel.saveSignedInState(signedInState = false)
+                    messageBarState.addError(Exceptions.GoogleAccountNotFoundException())
+                    viewModel.setLoading(false)
+                    viewModel.setDialogAuthOpened(false)
+                    viewModel.saveAuthenticated(false)
                 }
             )
+        }
+    }
+
+    LaunchedEffect(key1 = authenticated) {
+        if (authenticated) {
+            navigateToHome()
         }
     }
 
@@ -120,4 +135,6 @@ fun AuthenticationScreen(
 //            messageBarState.addError(Exception(message))
 //        }
 //    )
+
+
 }
