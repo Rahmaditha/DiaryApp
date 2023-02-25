@@ -1,12 +1,9 @@
 package com.cookiss.diaryapp.navigation
 
 import android.util.Log
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
@@ -15,8 +12,6 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.cookiss.diaryapp.data.repository.MongoDB
-import com.cookiss.diaryapp.domain.model.Diary
 import com.cookiss.diaryapp.domain.model.Mood
 import com.cookiss.diaryapp.presentation.components.DisplayAlertDialog
 import com.cookiss.diaryapp.presentation.screens.auth.AuthenticationScreen
@@ -30,7 +25,6 @@ import com.cookiss.diaryapp.util.Constants.WRITE_SCREEN_ARGUMENT_KEY
 import com.cookiss.diaryapp.util.RequestState
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.rememberPagerState
-import com.stevdzasan.messagebar.ContentWithMessageBar
 import com.stevdzasan.messagebar.rememberMessageBarState
 import io.realm.kotlin.mongodb.App
 import kotlinx.coroutines.Dispatchers
@@ -235,8 +229,16 @@ fun NavGraphBuilder.writeRoute(
             uiState = uiState,
             pagerState = pagerState,
             onDeleteConfirmed = {},
+            onDateTimeUpdated = { writeViewModel.updateDateTime(zonedDateTime = it) },
             moodName = { Mood.values()[pageNumber].name },
-            onBackPressed = onBackPressed
+            onBackPressed = onBackPressed,
+            onSaveClicked = {
+                writeViewModel.upsertDiary(
+                    diary = it.apply { mood = Mood.values()[pageNumber].name },
+                    onSuccess = { onBackPressed() },
+                    onError = {}
+                )
+            }
         )
     }
 }

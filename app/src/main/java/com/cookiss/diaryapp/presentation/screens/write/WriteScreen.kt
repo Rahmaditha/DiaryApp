@@ -9,6 +9,7 @@ import com.cookiss.diaryapp.domain.model.Diary
 import com.cookiss.diaryapp.domain.model.Mood
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.PagerState
+import java.time.ZonedDateTime
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class)
@@ -20,7 +21,9 @@ fun WriteScreen(
     onTitleChanged: (String) -> Unit,
     onDescriptionChanged: (String) -> Unit,
     onDeleteConfirmed: () -> Unit,
-    onBackPressed: () -> Unit
+    onDateTimeUpdated: (ZonedDateTime) -> Unit,
+    onBackPressed: () -> Unit,
+    onSaveClicked: (Diary) -> Unit
 ){
     LaunchedEffect(key1 = uiState.mood){
         pagerState.scrollToPage(Mood.valueOf(uiState.mood.name).ordinal)
@@ -32,16 +35,20 @@ fun WriteScreen(
                  selectedDiary = uiState.selectedDiary,
                  moodName = moodName,
                  onDeleteConfirmed = onDeleteConfirmed,
-                 onBackPressed = onBackPressed)
+                 onBackPressed = onBackPressed,
+                 onDateTimeUpdated = onDateTimeUpdated
+             )
         },
         content = {
             WriteContent(
+                uiState = uiState,
                 pagerState = pagerState,
                 title = uiState.title,
                 onTitleChanged = onTitleChanged,
                 description = uiState.description,
                 onDescriptionChanged = onDescriptionChanged,
-                paddingValues = it
+                paddingValues = it,
+                onSaveClicked = onSaveClicked
             )
         }
     )
