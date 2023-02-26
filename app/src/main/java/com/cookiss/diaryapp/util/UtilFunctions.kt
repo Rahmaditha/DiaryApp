@@ -6,6 +6,9 @@ import android.os.Build
 import android.util.Log
 import androidx.activity.result.IntentSenderRequest
 import androidx.annotation.RequiresApi
+import androidx.core.net.toUri
+import com.cookiss.diaryapp.data.database.entity.ImageToDelete
+import com.cookiss.diaryapp.data.database.entity.ImageToUpload
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.firebase.storage.FirebaseStorage
@@ -41,26 +44,26 @@ fun fetchImagesFromFirebase(
     }
 }
 
-//fun retryUploadingImageToFirebase(
-//    imageToUpload: ImageToUpload,
-//    onSuccess: () -> Unit
-//) {
-//    val storage = FirebaseStorage.getInstance().reference
-//    storage.child(imageToUpload.remoteImagePath).putFile(
-//        imageToUpload.imageUri.toUri(),
-//        storageMetadata { },
-//        imageToUpload.sessionUri.toUri()
-//    ).addOnSuccessListener { onSuccess() }
-//}
-//
-//fun retryDeletingImageFromFirebase(
-//    imageToDelete: ImageToDelete,
-//    onSuccess: () -> Unit
-//) {
-//    val storage = FirebaseStorage.getInstance().reference
-//    storage.child(imageToDelete.remoteImagePath).delete()
-//        .addOnSuccessListener { onSuccess() }
-//}
+fun retryUploadingImageToFirebase(
+    imageToUpload: ImageToUpload,
+    onSuccess: () -> Unit
+) {
+    val storage = FirebaseStorage.getInstance().reference
+    storage.child(imageToUpload.remoteImagePath).putFile(
+        imageToUpload.imageUri.toUri(),
+        storageMetadata { },
+        imageToUpload.sessionUri.toUri()
+    ).addOnSuccessListener { onSuccess() }
+}
+
+fun retryDeletingImageFromFirebase(
+    imageToDelete: ImageToDelete,
+    onSuccess: () -> Unit
+) {
+    val storage = FirebaseStorage.getInstance().reference
+    storage.child(imageToDelete.remoteImagePath).delete()
+        .addOnSuccessListener { onSuccess() }
+}
 
 fun RealmInstant.toInstant(): Instant {
     val sec: Long = this.epochSeconds

@@ -3,7 +3,7 @@ package com.cookiss.diaryapp.data.repository
 import android.util.Log
 import com.cookiss.diaryapp.domain.model.Diary
 import com.cookiss.diaryapp.util.Constants.APP_ID
-import com.cookiss.diaryapp.util.RequestState
+import com.cookiss.diaryapp.domain.model.RequestState
 import com.cookiss.diaryapp.util.toInstant
 import io.realm.kotlin.Realm
 import io.realm.kotlin.ext.query
@@ -111,6 +111,27 @@ object MongoDB: MongoRepository {
                     RequestState.Success(data = queriedDiary)
                 }else{
                     RequestState.Error(error = Exception("Queried Diary does not exist."))
+                }
+            }
+        }else{
+            RequestState.Error(UserNotAuthenticatedException())
+        }
+    }
+
+    override suspend fun deleteDiary(id: ObjectId): RequestState<Diary> {
+        return if(user != null){
+            realm.write {
+                val diary = query<Diary>(query = "_id == $0 AND ownerId == $1", id, user.identity)
+                    .first().find()
+                if(diary != null){
+                    try{
+                        delete(diary)
+                        RequestState.Success(data = diary)
+                    }catch (e: Exception){
+                        RequestState.Error(e)
+                    }
+                }else{
+                    RequestState.Error(Exception("Diary does not exist."))
                 }
             }
         }else{

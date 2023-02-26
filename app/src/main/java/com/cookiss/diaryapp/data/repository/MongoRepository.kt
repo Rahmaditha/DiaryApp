@@ -1,7 +1,7 @@
 package com.cookiss.diaryapp.data.repository
 
 import com.cookiss.diaryapp.domain.model.Diary
-import com.cookiss.diaryapp.util.RequestState
+import com.cookiss.diaryapp.domain.model.RequestState
 import io.realm.kotlin.types.ObjectId
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
@@ -14,4 +14,5 @@ interface MongoRepository {
     fun getSelectedDiary(diaryId: ObjectId): Flow<RequestState<Diary>>
     suspend fun insertDiary(diary: Diary): RequestState<Diary>
     suspend fun updateDiary(diary: Diary): RequestState<Diary>
+    suspend fun deleteDiary(id: ObjectId): RequestState<Diary>
 }

@@ -1,4 +1,4 @@
-package com.cookiss.diaryapp.util
+package com.cookiss.diaryapp.domain.model
 
 sealed class RequestState<out T>{
     object Idle : RequestState<Nothing>()

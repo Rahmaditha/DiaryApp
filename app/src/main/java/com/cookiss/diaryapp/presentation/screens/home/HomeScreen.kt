@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.cookiss.diaryapp.R
 import com.cookiss.diaryapp.data.repository.Diaries
-import com.cookiss.diaryapp.util.RequestState
+import com.cookiss.diaryapp.domain.model.RequestState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")

@@ -16,6 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.cookiss.diaryapp.util.Exceptions
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 import com.stevdzasan.messagebar.ContentWithMessageBar
 import com.stevdzasan.messagebar.MessageBarState
 
@@ -26,7 +28,7 @@ import com.stevdzasan.messagebar.MessageBarState
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun AuthenticationScreen(
-    onSuccessfullFirebaseSignIn: () -> Unit,
+    onSuccessfullFirebaseSignIn: (String) -> Unit,
     messageBarState: MessageBarState,
     onFailedFirebaseSignIn: (Exception) -> Unit,
     viewModel: AuthenticationViewModel = hiltViewModel(),
@@ -62,17 +64,15 @@ fun AuthenticationScreen(
         key = dialogAuthStateOpen,
         onResultReceived = { tokenId ->
             Log.d("AuthenticationScreen", "tokenId $tokenId")
-            viewModel.signInWithMongoAtlas(
-                tokenId = tokenId,
-                onSuccess = {
-                    viewModel.setDialogAuthOpened(false)
-                    onSuccessfullFirebaseSignIn()
-                },
-                onError = {
-                    viewModel.setDialogAuthOpened(false)
-                    onFailedFirebaseSignIn(it)
-                },
-            )
+            val credential = GoogleAuthProvider.getCredential(tokenId, null)
+            FirebaseAuth.getInstance().signInWithCredential(credential)
+                .addOnCompleteListener { task ->
+                    if(task.isSuccessful){
+                        onSuccessfullFirebaseSignIn(tokenId)
+                    }else{
+                        task.exception?.let { it -> onFailedFirebaseSignIn(it) }
+                    }
+                }
 
 //            viewModel.verifyTokenOnBackend(ApiRequest(tokenId = tokenId))
         },

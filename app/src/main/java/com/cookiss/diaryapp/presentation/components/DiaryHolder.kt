@@ -1,6 +1,9 @@
 package com.cookiss.diaryapp.presentation.components
 
+import android.net.Uri
 import android.os.Build
+import android.util.Log
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
@@ -18,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -27,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import com.cookiss.diaryapp.domain.model.Diary
 import com.cookiss.diaryapp.domain.model.Mood
 import com.cookiss.diaryapp.ui.theme.Elevation
+import com.cookiss.diaryapp.util.fetchImagesFromFirebase
 import com.cookiss.diaryapp.util.toInstant
 import io.realm.kotlin.ext.realmListOf
 import java.text.SimpleDateFormat
@@ -45,6 +50,32 @@ fun DiaryHolder(
     val localDensity = LocalDensity.current
     var galleryOpened by remember { mutableStateOf(false) }
     var galleryLoading by remember { mutableStateOf(false) }
+    val downloadedImages = remember {
+        mutableStateListOf<Uri>()
+    }
+    val context = LocalContext.current
+
+    LaunchedEffect(key1 = galleryOpened){
+        if(galleryOpened && downloadedImages.isEmpty()){
+            galleryLoading = true
+            Log.d("DiaryHolder", "list image: ${diary.images}")
+            fetchImagesFromFirebase(
+                remoteImagePaths = diary.images,
+                onImageDownload = {image ->
+                    downloadedImages.add(image)
+                },
+                onImageDownloadFailed = {
+                    Toast.makeText(context, "Images not uploaded yet. Please wait a little bit.", Toast.LENGTH_SHORT).show()
+                    galleryLoading = false
+                    galleryOpened = false
+                },
+                onReadyToDisplay = {
+                    galleryLoading = false
+                    galleryOpened = true
+                }
+            )
+        }
+    }
 
     Row(modifier = Modifier
         .clickable(
@@ -90,7 +121,7 @@ fun DiaryHolder(
                     )
                 }
                 AnimatedVisibility(
-                    visible = galleryOpened,
+                    visible = galleryOpened && !galleryLoading,
                     enter = fadeIn() + expandVertically(
                         animationSpec = spring(
                             dampingRatio = Spring.DampingRatioMediumBouncy,
@@ -99,7 +130,7 @@ fun DiaryHolder(
                     )
                 ) {
                     Column(modifier = Modifier.padding(all = 14.dp)) {
-                        Gallery(images = diary.images)
+                        Gallery(images = downloadedImages)
                     }
                 }
             }
