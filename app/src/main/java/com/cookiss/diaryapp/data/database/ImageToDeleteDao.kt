@@ -10,13 +10,13 @@ import com.cookiss.diaryapp.data.database.entity.ImageToUpload
 @Dao
 interface ImageToDeleteDao {
 
-    @Query("SELECT * FROM images_to_delete ORDER BY id ASC")
+    @Query("SELECT * FROM image_to_delete_table ORDER BY id ASC")
     suspend fun getAllImages(): List<ImageToDelete>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addImageToDelete(imageToDelete: ImageToDelete)
 
-    @Query("DELETE FROM images_to_delete WHERE id=:imageId")
+    @Query("DELETE FROM image_to_delete_table WHERE id=:imageId")
     suspend fun cleanupImage(imageId: Int)
 
 }

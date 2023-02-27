@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -17,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import com.cookiss.diaryapp.R
 import com.cookiss.diaryapp.data.repository.Diaries
 import com.cookiss.diaryapp.domain.model.RequestState
+import java.time.ZonedDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -26,6 +28,10 @@ fun HomeScreen(
     drawerState: DrawerState,
     onMenuClicked: () -> Unit,
     onSignOutClicked: () -> Unit,
+    dateIsSelected: Boolean,
+    onDateSelected: (ZonedDateTime) -> Unit,
+    onDateReset: () -> Unit,
+    onDeleteAllClicked: () -> Unit,
     navigateToWrite: () -> Unit,
     navigateToWriteWithArgs: (String) -> Unit,
 ){
@@ -35,14 +41,18 @@ fun HomeScreen(
 
     NavigationDrawer(
         drawerState = drawerState,
-        onSignOutClicked = onSignOutClicked
+        onSignOutClicked = onSignOutClicked,
+        onDeleteAllClicked = onDeleteAllClicked
     ) {
         Scaffold(
             modifier = Modifier.nestedScroll(scrollBehaviour.nestedScrollConnection),
             topBar = {
                 HomeTopBar(
                     scrollBehavior = scrollBehaviour,
-                    onMenuClicked = onMenuClicked
+                    onMenuClicked = onMenuClicked,
+                    dateIsSelected = dateIsSelected,
+                    onDateSelected = onDateSelected,
+                    onDateReset = onDateReset
                 )
             },
             floatingActionButton = {
@@ -81,6 +91,7 @@ fun HomeScreen(
             }
         )
     }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -88,6 +99,7 @@ fun HomeScreen(
 fun NavigationDrawer(
     drawerState: DrawerState,
     onSignOutClicked: () -> Unit,
+    onDeleteAllClicked: () -> Unit,
     content: @Composable () -> Unit
 ){
 
@@ -122,6 +134,21 @@ fun NavigationDrawer(
                         },
                         selected = false,
                         onClick = onSignOutClicked
+                    )
+                    NavigationDrawerItem(
+                        label = {
+                            Row(modifier = Modifier.padding(horizontal = 12.dp)) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Delete All Icon",
+                                    tint = MaterialTheme.colorScheme.onSurface
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(text = "Delete All Diaries", color = MaterialTheme.colorScheme.onSurface)
+                            }
+                        },
+                        selected = false,
+                        onClick = onDeleteAllClicked
                     )
                 }
             )

@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStoreFile
+import com.cookiss.diaryapp.connectivity.NetworkConnectivityObserver
 import com.cookiss.diaryapp.util.Constants
 import dagger.Module
 import dagger.Provides
@@ -62,5 +63,13 @@ object NetworkModule {
         return PreferenceDataStoreFactory.create(
             produceFile = { context.preferencesDataStoreFile(Constants.PREFERENCES_NAME) }
         )
+    }
+
+    @Provides
+    @Singleton
+    fun provideNetworkConnectivityObserver(
+        @ApplicationContext context: Context
+    ): NetworkConnectivityObserver {
+        return NetworkConnectivityObserver(context)
     }
 }

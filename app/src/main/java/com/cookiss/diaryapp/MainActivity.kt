@@ -1,9 +1,11 @@
 package com.cookiss.diaryapp
 
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -33,6 +35,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
+@RequiresApi(Build.VERSION_CODES.N)
 class MainActivity : ComponentActivity() {
 //    var keepSplashOpened = true
 
